@@ -6,7 +6,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": false,
-    "types": ["node", "jest"],
+    // "types": ["node", "jest"],
     "strict": true,
     "moduleResolution": "node",
     "noUnusedLocals": false,
@@ -20,7 +20,15 @@
     "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/@types/node/async_hooks.d.ts",
+      "@types"
+    ]
+    // "paths": {
+    //   "async_hooks":  ["./@types/process.d.ts"]
+    // }
   },
   "exclude": [
     "node_modules",
