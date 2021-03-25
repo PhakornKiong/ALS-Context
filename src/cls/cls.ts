@@ -4,32 +4,56 @@ import { AsyncResource } from 'async_hooks';
 import async_hooks from 'async_hooks';
 import { AsyncHook, HookCallbacks } from 'node:async_hooks';
 import { StorageType, Context } from '../types/types';
-process.namespace = {};
-type Store = Map<string, unknown>;
-export class CLS<T> {
+import util from 'util';
+
+const nameSpaceObj: any = {};
+// process.namespace = {};
+type Store = Map<string, any>;
+// Create increment number to propagate namespace
+let id = 1;
+function uuid() {
+  return id++;
+}
+export class CLS<T> implements Context<T> {
   storageImplementation: string;
   enabled: boolean;
   kResourceStore: symbol;
 
   constructor() {
+    // k.ResourceStore is unique/incremental index for storing context
     this.kResourceStore = Symbol('kResourceStore');
+    // this.kResourceStore = uuid();
+    // this.kResourceStore = async_hooks.executionAsyncId();
     this.storageImplementation = 'CLS-Hooked';
     this.enabled = false;
   }
 
   getStore(): Store | undefined {
     if (this.enabled) {
-      const resource = process.namespace;
+      // const resource = process.namespace;
+      // const resource = nameSpaceObj;
+      const resource = async_hooks.executionAsyncResource() as any;
       // Ugly workaround as TS does not support symbol as index
-      return resource[this.kResourceStore as any] as Store;
+      // return resource[this.kResourceStore as any] as Store;
+      // Using execution AsyncID will create new context for each new asyncID
+      // return resource[async_hooks.executionAsyncId()] as Store;
+      // debug2(resource);
+      return resource[this.kResourceStore] as Store;
     }
     return undefined;
   }
 
-  enterWith(store: Store): void {
+  enterWith(store: StorageType): void {
     this._enable();
-    const resource = process.namespace;
+    // const resource = process.namespace;
+    // const resource = nameSpaceObj;
+    const resource = async_hooks.executionAsyncResource() as any;
+    // Not sure why using symbol as index will cause object to be reset
+    // resource[this.kResourceStore as any] = store;
+    // Using execution AsyncID will create new context for each new asyncID
+    // resource[async_hooks.executionAsyncId()] = store;
     resource[this.kResourceStore as any] = store;
+    // debug2(Object.keys(process.namespace));
   }
 
   _enable(): void {
@@ -40,6 +64,10 @@ export class CLS<T> {
     }
   }
 
+  showAsync() {
+    return async_hooks.executionAsyncResource();
+  }
+
   _propagate(resource: Record<string, unknown>, triggerResource: Record<string, unknown>): void {
     const store = triggerResource[this.kResourceStore as any];
     if (this.enabled) {
@@ -47,23 +75,30 @@ export class CLS<T> {
     }
   }
 
-  run<R>(store: Store, callback: (...args: any[]) => R, ...args: any[]): R {
+  run<R>(defaults: Record<string, any>, callback: (...args: any[]) => R, ...args: any[]): R {
     // Avoid creation of an AsyncResource if store is already active
-    if (Object.is(store, this.getStore())) {
+    if (Object.is(defaults, this.getStore())) {
       return Reflect.apply(callback, null, args);
     }
-    const resource = new AsyncResource('LocalStorage', { requireManualDestroy: true });
+
+    const store: StorageType = defaults ? new Map(Object.entries(defaults)) : new Map();
+
+    const resource = new AsyncResource('LocalStorage', { requireManualDestroy: false });
 
     // Calling emitDestroy before runInAsyncScope avoids a try/finally
     // It is ok because emitDestroy only schedules calling the hook
-    resource.emitDestroy();
-    return resource.runInAsyncScope(() => {
+    // resource.emitDestroy();
+    // return resource.emitDestroy().runInAsyncScope(() => {
+    //   this.enterWith(store);
+    //   return Reflect.apply(callback, null, args);
+    // });
+    return resource.emitDestroy().runInAsyncScope(() => {
       this.enterWith(store);
       return Reflect.apply(callback, null, args);
     });
   }
 
-  get(key: string): unknown {
+  get(key: string): T | undefined {
     const store = this.getStore();
     return store?.get(key);
   }
@@ -83,12 +118,27 @@ function createHook(fns: HookCallbacks): AsyncHook {
 const storageHook = createHook({
   // eslint-disable-next-line @typescript-eslint/ban-types
   init(asyncId: number, type: string, triggerAsyncId: number, resource: object) {
-    const currentResource = process.namespace;
+    // const currentResource = process.namespace;
+    const currentResource = async_hooks.executionAsyncResource();
     // Value of currentResource is always a non null object
     for (let i = 0; i < storageList.length; ++i) {
       storageList[i]._propagate(resource, currentResource);
     }
+    // debug2(resource);
   },
+  // before(asyncId) {
+  //   debug2('before');
+  // },
+  // after(asyncId) {
+  //   debug2('after');
+  // },
+  // destroy(asyncId: number) {
+  //   debug2('destroy ran', 'current namespace: ', process.namespace, ' ', asyncId);
+  // },
 });
 
 export default CLS;
+const fs = require('fs');
+function debug2(...args: any[]) {
+  fs.writeFileSync(1, `${util.format(...args)}\n`, { flag: 'a' });
+}

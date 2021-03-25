@@ -21,12 +21,10 @@ export class ALS<T> implements Context<T> {
   }
 
   // Provide empty Map by default
-  run(cb: () => void, defaults?: StorageType): void {
+  run<R>(defaults: Record<string, any>, callback: (...args: any[]) => R, ...args: any[]): R {
     const store: StorageType = defaults ? new Map(Object.entries(defaults)) : new Map();
 
-    this.storage.run(store, () => {
-      cb();
-    });
+    return this.storage.run(store, callback, args);
   }
 }
 

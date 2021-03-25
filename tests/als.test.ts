@@ -18,19 +18,16 @@ describe('AsyncLocalStorage tests', () => {
 
     describe('Set is called inside of run() - 1 (With default)', () => {
       test('Return the default Object provided during run()', (done) => {
-        als.run(
-          () => {
-            expect(als.get('key')).toBe('something');
-            done();
-          },
-          { key: 'something' }
-        );
+        als.run({ key: 'something' }, () => {
+          expect(als.get('key')).toBe('something');
+          done();
+        });
       });
     });
 
     describe('Set is called inside of run() - 2 (Without default)', () => {
       test('Return the item set during run & undefined for others', (done) => {
-        als.run(() => {
+        als.run({}, () => {
           als.set('key', 'something');
           expect(als.get('key')).toBe('something');
           expect(als.get('something')).toBeUndefined();
@@ -41,17 +38,17 @@ describe('AsyncLocalStorage tests', () => {
 
     describe('Nested case of run() - 1', () => {
       test('Should only get item set inside own run()', async (done) => {
-        als.run(() => {
+        als.run({}, () => {
           expect(als.get('value')).toBeUndefined();
           als.set('value', 0);
           expect(als.get('value')).toBe(0);
-          als.run(() => {
+          als.run({}, () => {
             expect(als.get('value')).toBeUndefined();
             als.set('value', 1);
             expect(als.get('value')).toBe(1);
             process.nextTick(() => {
               expect(als.get('value')).toBe(1);
-              als.run(() => {
+              als.run({}, () => {
                 expect(als.get('value')).toBeUndefined();
                 als.set('value', 2);
                 expect(als.get('value')).toBe(2);
