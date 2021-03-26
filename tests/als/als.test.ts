@@ -1,8 +1,8 @@
-import { isAlsSupported, getNodeVersion, nodeVersionString } from '../dist/utils/nodeVersion';
+import { isAlsSupported, getNodeVersion, nodeVersionString } from '../../dist/utils/nodeVersion';
 
 describe('AsyncLocalStorage tests', () => {
   if (isAlsSupported(getNodeVersion(nodeVersionString))) {
-    const ALS = require('../dist/als/als').default;
+    const ALS = require('../../dist/als/als').default;
     let als = new ALS();
 
     afterEach(() => {

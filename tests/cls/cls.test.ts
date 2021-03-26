@@ -1,5 +1,5 @@
 describe('AsyncLocalStorage tests', () => {
-  const CLS = require('../dist/cls/cls').default;
+  const CLS = require('../../dist/cls/cls').default;
   let cls = new CLS();
 
   afterEach(() => {
