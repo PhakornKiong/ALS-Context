@@ -7,8 +7,10 @@
     "clean": "rimraf dist/",
     "build": "npm run clean && tsc",
     "test": "npm run build && jest --config=jest.config.js",
+    "devtest": "jest --config=jest.config.js",
     "cover": "npm run build && jest --config=jest.config.js --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "bench": "node benchmark/cls-hooked.run.js && node benchmark/cls.run.js && node benchmark/als.run.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
     "@types/node": "^14.14.20",
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
+    "cls-hooked": "^4.2.2",
     "eslint": "^7.17.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-jest": "^24.3.2",

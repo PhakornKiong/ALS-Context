@@ -20,10 +20,20 @@ export class ALS<T> implements Context<T> {
     store?.set(key, value);
   }
 
+  getStore(): StorageType | undefined {
+    return this.storage.getStore();
+  }
+
   // Provide empty Map by default
   run<R>(defaults: Record<string, any>, callback: (...args: any[]) => R, ...args: any[]): R {
-    const store: StorageType = defaults ? new Map(Object.entries(defaults)) : new Map();
-
+    let store: Map<any, any>;
+    if (defaults instanceof Map) {
+      store = defaults;
+    } else if (defaults) {
+      store = new Map(Object.entries(defaults));
+    } else {
+      store = new Map();
+    }
     return this.storage.run(store, callback, args);
   }
 

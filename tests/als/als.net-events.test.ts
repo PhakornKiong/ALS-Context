@@ -24,21 +24,11 @@ describe('AsyncLocalStorage test with net connection', () => {
         let server;
         als.run({}, () => {
           als.set('test', 'newContextValue');
-          const resource = new AsyncResource('foo');
           server = net.createServer((socket) => {
             testValue1 = als.get('test');
-            let x = als.bind(resource, () => {
-              testValue2 = als.get('test');
-              server.close();
-              socket.end('GoodBye');
-
-              serverDone = true;
-              checkDone();
-            });
-            console.log(x);
             socket.on(
               'data',
-              als.bindEmitter(resource, () => {
+              als.bind(() => {
                 testValue2 = als.get('test');
                 server.close();
                 socket.end('GoodBye');
@@ -53,7 +43,7 @@ describe('AsyncLocalStorage test with net connection', () => {
             const address = server.address();
             als.run({}, () => {
               als.set('test', 'MONKEY');
-
+              // Not sure why no need to use bind() here
               const client = net.connect(address.port, () => {
                 testValue3 = als.get('test');
                 client.write('Hello');
@@ -79,25 +69,21 @@ describe('AsyncLocalStorage test with net connection', () => {
     const newFunc = Function.prototype.bind(this);
 
     test('value newContextValue', () => {
-      console.log('1', testValue1);
       expect(testValue1).toBeTruthy();
       expect(testValue1).toBe('newContextValue');
     });
 
     test('value newContextValue 2', () => {
-      console.log('2', testValue2);
       expect(testValue2).toBeTruthy();
       expect(testValue2).toBe('newContextValue');
     });
 
     test('value MONKEY', () => {
-      console.log('3', testValue3);
       expect(testValue3).toBeTruthy();
       expect(testValue3).toBe('MONKEY');
     });
 
     test('value MONKEY 2', () => {
-      console.log('4', testValue4);
       expect(testValue4).toBeTruthy();
       expect(testValue4).toBe('MONKEY');
     });

@@ -38,7 +38,6 @@ describe('AsyncLocalStorage tests', () => {
       cls.run({}, () => {
         expect(cls.get('value')).toBeUndefined();
         cls.set('value', 0);
-        console.log(cls.get('value'));
         expect(cls.get('value')).toBe(0);
         cls.run({}, () => {
           expect(cls.get('value')).toBeUndefined();

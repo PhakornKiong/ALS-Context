@@ -12,7 +12,7 @@ module.exports = {
   },
   reporters: ['default', 'jest-junit'],
   coverageReporters: ['json', 'lcov', 'text', 'clover', 'text', 'cobertura'],
-  testMatch: ['<rootDir>/tests/**/*.(spec|test).ts|tsx'],
+  testMatch: ['<rootDir>/tests/**/*.(spec|test).ts|tsx', '<rootDir>/tests/**/*.(spec|test).js'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
