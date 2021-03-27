@@ -1,14 +1,14 @@
 const async_hooks = require('async_hooks');
-
+// const v8 = require('v8');
 const CLS = require('../dist/cls/cls').default;
 const cls = new CLS();
 
-const ALS = require('../dist/als/als').default;
-const als = new ALS();
+// const ALS = require('../dist/als/als').default;
+// const als = new ALS();
 
 const store = new CLS();
 
-const clshooked = require('../src/cls/cls-hooked').createNamespace;
+const clshooked = require('cls-hooked').createNamespace;
 const ns = clshooked('here');
 
 function sleep(ms) {
@@ -51,28 +51,28 @@ async function t2() {
 //   // console.log(process.namespace);
 // });
 
-// cls.run({}, () => {
-//   console.log(cls.get('value'), 'undefined');
-//   cls.set('value', 1);
-//   cls.set('hehe', 1);
-//   console.log(cls.get('value'), 1);
-//   process.nextTick(() => {
-//     console.log(cls.get('value'), 1);
-//     cls.run({}, () => {
-//       console.log(cls.get('value'), 'undefined');
-//       cls.set('value', 2);
-//       Promise.resolve('www.google.com').then((res) => {
-//         // console.log('inner run id', async_hooks.executionAsyncId());
-//         // console.log('inner run', cls._contexts);
-//         console.log(cls.get('value'), 'need to be 2');
-//       });
-//       t2();
-//       console.log(cls.get('value'), 2);
-//     });
-//     console.log(cls.get('value'), 1);
-//   });
-//   console.log(cls.get('value'), 'should be 1');
-// });
+cls.run({}, () => {
+  console.log(cls.get('value'), 'undefined');
+  cls.set('value', 1);
+  cls.set('hehe', 1);
+  console.log(cls.get('value'), 1);
+  process.nextTick(() => {
+    console.log(cls.get('value'), 1);
+    cls.run({}, () => {
+      console.log(cls.get('value'), 'undefined');
+      cls.set('value', 2);
+      Promise.resolve('www.google.com').then((res) => {
+        // console.log('inner run id', async_hooks.executionAsyncId());
+        // console.log('inner run', cls._contexts);
+        console.log(cls.get('value'), 'need to be 2');
+      });
+      t2();
+      console.log(cls.get('value'), 2);
+    });
+    console.log(cls.get('value'), 1);
+  });
+  console.log(cls.get('value'), 'should be 1');
+});
 
 // cls.run({}, () => {
 //   cls.set('value', 1);
@@ -88,14 +88,14 @@ async function t2() {
 //     console.log(cls.get('value'), 1);
 //   });
 // });
-Object.size = function (obj) {
-  var size = 0,
-    key;
-  for (key in obj) {
-    if (obj.hasOwnProperty(key)) size++;
-  }
-  return size;
-};
+// Object.size = function (obj) {
+//   var size = 0,
+//     key;
+//   for (key in obj) {
+//     if (obj.hasOwnProperty(key)) size++;
+//   }
+//   return size;
+// };
 
 // async function t1() {
 //   for (let i = 0; i < 200000; i++) {
@@ -121,28 +121,47 @@ Object.size = function (obj) {
 // t2();
 
 // for CLS or ALS
-function t1() {
-  for (let i = 0; i < 100000; i++) {
-    store.run({}, async () => {
-      store.set('hello', 'there');
-      if (i === 99999) {
-        console.log(store._contexts.size);
-      }
-    });
-  }
-}
-console.log('here');
-t1();
+// function t1() {
+//   for (let i = 0; i < 200000; i++) {
+//     store.run({}, async () => {
+//       store.set('hello', 'there');
+//       if (i === 19) {
+//         console.log(store.active);
+//         console.log(store._contexts);
+//       }
+//     });
+//   }
+// }
+// console.log('here');
+// t1();
 
-async function t2() {
-  await sleep(3000);
-  for (let i = 0; i < 100000; i++) {
-    store.run({}, async () => {
-      store.set(Math.random(), Date.now());
-    });
-  }
-}
-t2();
+// async function t2() {
+//   await sleep(3000);
+//   for (let i = 0; i < 100000; i++) {
+//     store.run({}, async () => {
+//       store.set(Math.random(), Date.now());
+//     });
+//   }
+//   if ((i = 99999)) {
+//   }
+// }
+// t2();
+
+// async function t3() {
+//   await sleep(500);
+//   console.log(store.active);
+//   console.log(store._contexts);
+//   await sleep(500);
+//   console.log(store.active);
+//   console.log(store._contexts.size);
+//   await sleep(500);
+//   console.log(store.active);
+//   console.log(store._contexts.size);
+//   await sleep(3000);
+//   console.log(store.active);
+//   console.log(store._contexts.size);
+// }
+// t3();
 
 // const a = Symbol('abc');
 // const b = Symbol('abc');

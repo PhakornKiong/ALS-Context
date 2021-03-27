@@ -1,7 +1,13 @@
 {
-  "name": "ALS-Context",
-  "version": "1.0.0",
-  "description": "Continuation-local storage using Node.js AsyncLocalStorage with fallback to cls-hook",
+  "name": "alscontext",
+  "version": "0.0.1",
+  "description": "Continuation-local storage using Node.js AsyncLocalStorage with fallback to modified cls-hooked",
+  "maintainers": [
+    {
+      "name": "Phakorn Kiong",
+      "email": "phakorn214@gmail.com"
+    }
+  ],
   "main": "dist/index.js",
   "scripts": {
     "clean": "rimraf dist/",
@@ -16,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/Darkripper214/ALS-Context.git"
   },
-  "author": "",
+  "author": "Phakorn Kiong",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Darkripper214/ALS-Context/issues"
@@ -46,6 +52,12 @@
     "asynchronouslocalstorage",
     "threadlocal",
     "context",
-    "typescript"
+    "typescript",
+    "express-context"
+  ],
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist/*"
   ]
 }

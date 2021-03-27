@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-done-callback */
 describe('AsyncLocalStorage tests', () => {
   const CLS = require('../../dist/cls/cls').default;
   let cls = new CLS();

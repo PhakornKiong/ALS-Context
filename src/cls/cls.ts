@@ -1,139 +1,79 @@
-// const AsyncResource = require('async_hooks');
-// const async_hooks = require('async_hooks');
 import { AsyncResource } from 'async_hooks';
 import async_hooks from 'async_hooks';
-// import { AsyncHook, HookCallbacks } from 'node:async_hooks';
 import { StorageType, Context } from '../types/types';
-import util from 'util';
+// import util from 'util';
 
-const nameSpaceObj: any = {};
-// process.namespace = {};
 type Store = Map<string, any>;
-// Create increment number to propagate namespace
-// let id = 1;
-// function uuid() {
-//   return id++;
-// }
+// Create increment number to propagate unique id
+let id = 1;
+function uuid() {
+  return id++;
+}
 export class CLS<T> implements Context<T> {
   storageImplementation: string;
   enabled: boolean;
-  kResourceStore: string;
+  kResourceStore: number;
   storage: StorageType;
   active: any;
   _contexts: Map<any, any>;
-  _idRef: Map<any, any>;
 
   constructor() {
-    // k.ResourceStore is unique/incremental index for storing context
-    // this.kResourceStore = Symbol('kResourceStore');
-    this.kResourceStore = 'something';
-    // this.kResourceStore = async_hooks.executionAsyncId();
+    this.kResourceStore = uuid();
     this.storageImplementation = 'CLS-Hooked';
     this.enabled = false;
     this.storage = new Map();
     this.active = null;
     this._contexts = new Map();
-    this._idRef = new Map();
   }
 
   getStore(): Store | undefined {
     if (this.enabled) {
-      // const resource = process.namespace;
-      // const resource = nameSpaceObj;
-      // const resource = async_hooks.executionAsyncResource() as any;
-      // const resource = nameSpaceObj[async_hooks.executionAsyncId()];
-      // debug2(nameSpaceObj);
-      // debug2(async_hooks.executionAsyncId());
-      // debug2(async_hooks.executionAsyncId());
-      // const idRef = this._idRef.get(async_hooks.executionAsyncId());
-      // debug2(this._idRef);
-      // const resource = this._contexts.get(idRef);
-      const resource = this._contexts.get(async_hooks.executionAsyncId());
-
-      // if (resource == undefined) {
-      //   //   // debug2(async_hooks.executionAsyncId());
-      //   //   // debug2(this._contexts);
-      //   return undefined;
-      // }
-      // Ugly workaround as TS does not support symbol as index
-      // return resource[this.kResourceStore as any] as Store;
-      // Using execution AsyncID will create new context for each new asyncID
-      // return resource[async_hooks.executionAsyncId()] as Store;
-      // return resource[this.kResourceStore] as Store;
+      // Alternative context grab when async function is scheduled in asyncScope, but run way after cls.run() had finished
+      const resource =
+        this._contexts.get(async_hooks.executionAsyncId()) ||
+        this._contexts.get(async_hooks.triggerAsyncId);
       return resource as Store;
     }
     return undefined;
   }
 
-  enterWith(store: StorageType, asyncResource: AsyncResource): void {
-    this._enable(asyncResource);
-    // const resource = this._contexts.get(asyncResource.asyncId());
-
-    // Not sure why using symbol as index will cause object to be reset
-    // resource[this.kResourceStore as any] = store;
-    // Using execution AsyncID will create new context for each new asyncID
-    // resource[async_hooks.executionAsyncId()] = store;
-    // resource[this.kResourceStore as any] = store;
-
-    // debug2(Object.keys(process.namespace));
+  enterWith(): void {
+    this._enable();
   }
 
-  _enable(asyncResource: AsyncResource): void {
+  _enable(): void {
     if (!this.enabled) {
       this.enabled = true;
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const self = this;
       const storageHook = async_hooks.createHook({
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars
         init(asyncId: number, type: string, triggerAsyncId: number, resource: object) {
-          // const currentResource = nameSpaceObj[asyncResource.asyncId()];
-          // Skip appending of AsyncResource into _contexts as it is already available
-          // if (
-          //   type === 'PROMISE' ||
-          //   type === 'Timeout' ||
-          //   type === 'TTYWRAP' ||
-          //   type === 'SIGNALWRAP'
-          // ) {
-          //   // debug2(self.active.asyncId());
-          //   self._idRef.set(asyncId, self.active.asyncId());
-          //   return;
-          // }
-          // if (type === 'LocalStorage' || type === 'TickObject') {
-          //   // debug2(self.active.asyncId());
-          //   self._idRef.set(asyncId, asyncId);
-          //   return;
-          // }
-          // debug2(type);
-          // debug2('init', 'type: ', type, 'id: ', asyncId);
           if (self.active) {
             self._contexts.set(asyncId, self.active[self.kResourceStore]);
           } else {
-            // self._contexts.set(asyncId, currentResource);
+            self._contexts.set(asyncId, self._contexts.get(triggerAsyncId));
           }
         },
         // before(asyncId) {
-        //   debug2('before', asyncId);
         // },
-        after(asyncId) {
-          // debug2('after', asyncId);
-          // To be review, do we need contexts till it is destroyed?
-          self._contexts.delete(asyncId);
-        },
+        // after(asyncId) {
+        //   // debug2('after', asyncId);
+        //   // To be review, do we need contexts till it is destroyed?
+        //   // This doesn't really help
+        //   // self._contexts.delete(asyncId);
+        // },
         destroy(asyncId: number) {
           self._contexts.delete(asyncId);
+          // Do i need to clear self.active? if not set to null when exiting asyncResource.runInAsyncScope
+          // if (self.active && self.active.asyncId() === asyncId) {
+          //   debug2('delete');
+          //   self.active = null;
+          // }
+          // debug2('destroy', asyncId);
         },
       });
       storageHook.enable();
-    }
-  }
-
-  _propagate(resource: Record<string, unknown>, triggerResource: Record<string, unknown>): void {
-    if (triggerResource == undefined) {
-      return;
-    }
-    const store = triggerResource[this.kResourceStore as any];
-    if (this.enabled) {
-      resource[this.kResourceStore as any] = store;
     }
   }
 
@@ -152,24 +92,24 @@ export class CLS<T> implements Context<T> {
       store = new Map();
     }
 
-    const resource = new AsyncResource('LocalStorage', { requireManualDestroy: false }) as any;
+    const resource = new AsyncResource('LocalStorage', { requireManualDestroy: true }) as any;
 
     resource[this.kResourceStore] = store;
     this._contexts.set(resource.asyncId(), resource[this.kResourceStore]);
 
     return resource.emitDestroy().runInAsyncScope(() => {
-      this.enterWith(store, resource);
+      this.enterWith();
       this.active = resource;
       const res = Reflect.apply(callback, null, args);
+      // Do we need to set to null here?
+      // Might have edge case where async is schedule for long and context is lost?
       this.active = null;
-      // this._contexts = new Map();
       return res;
     });
   }
 
   get(key: string): T | undefined {
     const store = this.getStore();
-    // debug2(async_hooks.executionAsyncId());
     return store?.get(key);
   }
 
@@ -215,7 +155,7 @@ export class CLS<T> implements Context<T> {
 }
 
 export default CLS;
-const fs = require('fs');
-function debug2(...args: any[]) {
-  fs.writeFileSync(1, `${util.format(...args)}\n`, { flag: 'a' });
-}
+// const fs = require('fs');
+// function debug2(...args: any[]) {
+//   fs.writeFileSync(1, `${util.format(...args)}\n`, { flag: 'a' });
+// }

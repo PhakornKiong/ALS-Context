@@ -1,6 +1,5 @@
-const CLS = require('../dist/cls/cls').default;
-const store = new CLS();
-const END = 300000;
+const { getContext } = require('./util/stack');
+const END = 100000;
 const { writeResult } = require('./util/writeFile');
 const result = [];
 function sleep(ms) {
@@ -10,8 +9,8 @@ function sleep(ms) {
 async function t1(l) {
   if (l > 1) {
   }
-  store.set('hello', 'there');
-  store.get('hello');
+  getContext.hello = 'hello';
+  getContext.hello;
 }
 const start = Date.now();
 
@@ -21,7 +20,7 @@ async function tx() {
   let avr_cnt = 0;
   for (let loop = 0; loop < END; loop++) {
     const start = Date.now();
-    await store.run({}, t1);
+    t1();
     const delta = Date.now() - start;
     avr_delta_sum += delta;
     avr_cnt++;

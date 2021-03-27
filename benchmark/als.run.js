@@ -1,6 +1,6 @@
 const ALS = require('../dist/als/als').default;
 const store = new ALS();
-const END = 100000;
+const END = 300000;
 const { writeResult } = require('./util/writeFile');
 const result = [];
 function sleep(ms) {

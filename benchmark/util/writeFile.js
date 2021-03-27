@@ -18,10 +18,10 @@ function writeFile(fileName, result, totalTime) {
   file.on('error', function (err) {
     console.log(err);
   });
+  file.write(`Total Time Taken ${totalTime} \n`);
   result.forEach(function (v) {
     file.write(v + '\n');
   });
-  file.write(`Total Time Taken ${totalTime}`);
   file.end();
 }
 

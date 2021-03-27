@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-done-callback */
 // Test Case from cls-hooked
 // To test that context is not lost when working with EE
 // https://github.com/nodejs/node/issues/33723
@@ -43,7 +44,6 @@ describe('CLS test with net connection', () => {
 
           cls.run({}, () => {
             cls.set('test', 'MONKEY');
-            const resource = new AsyncResource('foo');
             const client = net.connect(
               address.port,
               cls.bind(() => {
@@ -68,8 +68,6 @@ describe('CLS test with net connection', () => {
       }
     }
   });
-
-  const newFunc = Function.prototype.bind(this);
 
   test('value newContextValue', () => {
     expect(testValue1).toBeTruthy();

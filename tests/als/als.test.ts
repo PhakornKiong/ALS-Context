@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-done-callback */
 import { isAlsSupported, getNodeVersion, nodeVersionString } from '../../dist/utils/nodeVersion';
 
 describe('AsyncLocalStorage tests', () => {
@@ -62,6 +63,7 @@ describe('AsyncLocalStorage tests', () => {
       }, 10000);
     });
   } else {
+    // eslint-disable-next-line jest/expect-expect
     test('dummy test', () => {
       // Avoid Jest Complain
     });

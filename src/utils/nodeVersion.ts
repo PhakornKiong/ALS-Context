@@ -40,9 +40,13 @@ export function isAlsSupported(nodeVersion: NodeVersion): boolean {
 }
 
 export function isClsSupported(nodeVersion: NodeVersion): boolean {
-  const { majorVer } = nodeVersion;
+  const { majorVer, minorVer } = nodeVersion;
+  // https://nodejs.org/docs/latest-v8.x/api/async_hooks.html#async_hooks_asyncresource_runinasyncscope_fn_thisarg_args
+  if (majorVer === 8) {
+    return minorVer >= 12;
+  }
 
-  if (majorVer >= 8) {
+  if (majorVer >= 9) {
     return true;
   }
 

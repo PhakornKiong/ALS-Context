@@ -2,7 +2,7 @@ let createNamespace = require('cls-hooked').createNamespace;
 let store = createNamespace('benchmark');
 const { writeResult } = require('./util/writeFile');
 const result = [];
-const END = 100000;
+const END = 300000;
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

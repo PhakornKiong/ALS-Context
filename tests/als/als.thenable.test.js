@@ -1,4 +1,5 @@
 describe('verifies CLS works with thenables', () => {
+  // eslint-disable-next-line no-undef
   const ALS = require('../../dist/als/als').default;
   const store = new ALS();
   const data = new Map().set('result', Symbol('verifier'));

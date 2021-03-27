@@ -1,8 +1,9 @@
+/* eslint-disable jest/no-done-callback */
 // Test Case from cls-hooked
 // To test that context is not lost when working with EE
 // https://github.com/nodejs/node/issues/33723
 import net from 'net';
-import { AsyncResource } from 'async_hooks';
+
 import { isAlsSupported, getNodeVersion, nodeVersionString } from '../../dist/utils/nodeVersion';
 describe('AsyncLocalStorage test with net connection', () => {
   let als;
@@ -66,8 +67,6 @@ describe('AsyncLocalStorage test with net connection', () => {
       }
     });
 
-    const newFunc = Function.prototype.bind(this);
-
     test('value newContextValue', () => {
       expect(testValue1).toBeTruthy();
       expect(testValue1).toBe('newContextValue');
@@ -88,8 +87,9 @@ describe('AsyncLocalStorage test with net connection', () => {
       expect(testValue4).toBe('MONKEY');
     });
   } else {
+    // eslint-disable-next-line jest/expect-expect
     test('dummy test', () => {
       // Avoid Jest Complain
     });
   }
-}, 15000);
+});

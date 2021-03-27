@@ -38,7 +38,7 @@ export class ALS<T> implements Context<T> {
   }
 
   // Bind a function to current execution context
-  bind<Func extends (...args: any[]) => any>(fn: Func, ...args: []): any {
+  bind<Func extends (...args: any[]) => any>(fn: Func, ...args: any[]): any {
     // TODO Add validation for functions
     const asyncResource = new AsyncResource('bindFunc');
     const ret = asyncResource.runInAsyncScope.bind(asyncResource, fn, asyncResource, ...args);

@@ -49,13 +49,18 @@ describe('node Version Util Test', () => {
       expect(isClsSupported(nodeVersion)).toBe(false);
     });
 
-    test('Versions 8 support CLS', () => {
+    test('Versions 8.0 does not support CLS', () => {
       const nodeVersion = getNodeVersion('8.0.0');
+      expect(isClsSupported(nodeVersion)).toBe(false);
+    });
+
+    test('Versions 8.12 support CLS', () => {
+      const nodeVersion = getNodeVersion('8.12.0');
       expect(isClsSupported(nodeVersion)).toBe(true);
     });
 
     test('Versions > 8 support CLS', () => {
-      const nodeVersion = getNodeVersion('8.7.0');
+      const nodeVersion = getNodeVersion('9.0.0');
       expect(isClsSupported(nodeVersion)).toBe(true);
     });
 
