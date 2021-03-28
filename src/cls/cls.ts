@@ -3,17 +3,20 @@ import async_hooks from 'async_hooks';
 import { StorageType, Context } from '../types/types';
 // import util from 'util';
 
-type Store = Map<string, any>;
 // Create increment number to propagate unique id
 let id = 1;
 function uuid() {
   return id++;
 }
 export class CLS<T> implements Context<T> {
+  /**
+   * Storage's implementation
+   * @type {string}
+   * @public
+   */
   storageImplementation: string;
   enabled: boolean;
   kResourceStore: number;
-  storage: StorageType;
   active: any;
   _contexts: Map<any, any>;
 
@@ -21,18 +24,21 @@ export class CLS<T> implements Context<T> {
     this.kResourceStore = uuid();
     this.storageImplementation = 'CLS-Hooked';
     this.enabled = false;
-    this.storage = new Map();
     this.active = null;
     this._contexts = new Map();
   }
 
-  getStore(): Store | undefined {
+  /**
+   * Get the entire context in Map object or undefined
+   * @returns StorageType | undefined
+   */
+  getStore(): StorageType | undefined {
     if (this.enabled) {
       // Alternative context grab when async function is scheduled in asyncScope, but run way after cls.run() had finished
       const resource =
         this._contexts.get(async_hooks.executionAsyncId()) ||
         this._contexts.get(async_hooks.triggerAsyncId);
-      return resource as Store;
+      return resource as StorageType;
     }
     return undefined;
   }
@@ -77,6 +83,13 @@ export class CLS<T> implements Context<T> {
     }
   }
 
+  /**
+   * Start the boundary of a context, anything set to be run from within the callback will have the same context
+   * @param  {Record<string,any>} defaults Optional Map or Record containing default values for context
+   * @param  {(...args:any[])=>R} callback Function that will be the boundary of the said context, anything set to be run from within the callback will have the same context
+   * @param  {any[]} ...args Option arguments to be passed to be passed to callback
+   * @returns R callback's return value
+   */
   run<R>(defaults: Record<string, any>, callback: (...args: any[]) => R, ...args: any[]): R {
     // Avoid creation of an AsyncResource if store is already active
     if (Object.is(defaults, this.getStore())) {
@@ -107,17 +120,34 @@ export class CLS<T> implements Context<T> {
       return res;
     });
   }
-
+  /**
+   *
+   * Get the stored value in context or undefined
+   * @param  {string} key String key to retrieve stored value
+   * @returns T | undefined Return the stored value in context or undefined
+   */
   get(key: string): T | undefined {
     const store = this.getStore();
     return store?.get(key);
   }
 
-  set(key: string, value: unknown): void {
+  /**
+   * Set key & value to the current context
+   * @param  {string} key String key to be stored
+   * @param  {T} value Value to be stored under key for lookup
+   * @returns void
+   */
+  set(key: string, value: T): void {
     const store = this.getStore();
     store?.set(key, value);
   }
 
+  /**
+   * Bind function to current context
+   * @param {(...args: any[])=> any} fn Function to be bind to current context
+   * @param  {any[]} ...args Option arguments to be passed to be passed to fn
+   * @returns any fn's return value
+   */
   // Bind a function to current execution context
   bind<Func extends (...args: any[]) => any>(fn: Func, ...args: []): any {
     // TODO Add validation for functions
@@ -127,6 +157,13 @@ export class CLS<T> implements Context<T> {
     return ret;
   }
 
+  /**
+   * Bind function to an AsyncResource context
+   * @param {AsyncResource} asyncResource Nodejs AsyncResource from async_hooks
+   * @param {(...args: any[])=> any} fn Function to be bind to asyncResource's context
+   * @param  {any[]} ...args Option arguments to be passed to be passed to fn
+   * @returns any fn's return value
+   */
   bindEmitter<Func extends (...args: any[]) => any>(
     asyncResource: AsyncResource,
     fn: Func,

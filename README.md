@@ -48,6 +48,161 @@ function requestHandler() {
 
 ```
 
+# Install
+
+```bash
+$ npm install alscontext
+```
+
+# Usage
+
+Importing Module
+
+```javascript
+// mjs
+import ALS, { CLS } from 'alscontext';
+
+// cjs
+const ALS = require('alscontext').default;
+const ALS = require('alscontext').ALS;
+const CLS = require('alscontext').CLS;
+
+// ALS will automatically determine whether to use node's AsyncLocalStorage or the custom implemented CLS that is consistent with node
+// If you want to use CLS, it can be imported as CLS like above
+```
+
+
+
+As an `Express` middleware
+
+```Javascript
+const ALS = require('alscontext').default;
+const express = require('express');
+
+const als = new ALS();
+const app = express();
+const port = 3000;
+
+app.use((req, res, next) => {
+  // als.run() creates a new context with a default object here
+  als.run({ user: 'John Doe' }, () => {
+    // You may do other operation here before passing the the next middleware
+    next();
+  });
+});
+
+app.use((req, res, next) => {
+  als.get('user'); // Return "John Doe"
+  als.set('user', 'Max'); // Set the "user" key to "Max"
+  next();
+});
+
+app.get('/', (req, res) => {
+  // als.getStore() returns a Map
+  res.json({ store: als.getStore() });
+});
+
+app.listen(port, () => {
+  console.log(`Running on http://localhost:${port}/`);
+});
+
+```
+
+While working with `EventEmitter` like `req` or `res` from `Express` like the following, it is best to use `als.bind()` or `als.bindEmitter()` to bind it to the right `async context`. 
+
+```javascript
+  req.on(
+    'close',
+    als.bind(() => {
+      console.log(als.getStore()); //returns the store
+    })
+  );
+
+   req.on('close', () => {
+     console.log(als.getStore()); //returns undefined
+   });
+```
+
+This is because `EventEmitter` is not part of the `asyncResource` and it will run outside the `context`.  [More on the discussion here](https://github.com/nodejs/node/issues/33723)
+
+
+
+This module supports having multiple instance nested together, for example:
+
+```javascript
+const ALS = require('alscontext').ALS;
+
+const store1 = new ALS();
+const store2 = new ALS();
+
+let test1Val;
+let test2Val;
+let test3Val;
+let test4Val;
+
+store1.run({}, () => {
+  // Store 1 - outer run starts
+  console.log('Store 1 - outer run starts');
+  store2.run({}, () => {
+    // Store 2 - run starts
+    console.log('Store 2 - run starts');
+    store1.set('name', 'store1');
+    store2.set('name', 'store2');
+
+    setTimeout(() => {
+      store1.run({}, () => {
+        // Store 1 - inner run starts
+        console.log('Store 1 - inner run starts');
+        process.nextTick(() => {
+          console.log('Store 1 - next Tick starts');
+          store1.set('name', 'bob');
+          store2.set('name', 'alice');
+          setTimeout(() => {
+            console.log('Store 1 - timeout starts');
+            test3Val = store1.get('name');
+            test4Val = store2.get('name');
+            console.log(test3Val);
+            console.log(test4Val);
+            console.log('Store 1 - timeout ends');
+          });
+          console.log('Store 1 - next Tick ends');
+        });
+        console.log('Store 1 - inner run ends');
+        // Store 1 - inner run ends
+      });
+    });
+    process.nextTick(() => {
+      test1Val = store1.get('name');
+      test2Val = store2.get('name');
+      console.log(test1Val);
+      console.log(test2Val);
+    });
+    console.log('Store 2 - run ends');
+    // Store 2 - run ends
+  });
+  console.log('Store 1 - outer run ends');
+  // Store 1 - outer run ends
+});
+
+// Take note at the sequence
+// Store 1 - outer run starts
+// Store 2 - run starts
+// Store 2 - run ends
+// Store 1 - outer run ends
+// store1
+// store2
+// Store 1 - inner run starts
+// Store 1 - inner run ends
+// Store 1 - next Tick starts
+// Store 1 - next Tick ends
+// Store 1 - timeout starts
+// bob
+// alice
+// Store 1 - timeout ends
+```
+
+
+
 # API Reference
 
 ## CLASS: ALS<T>
@@ -88,7 +243,7 @@ function requestHandler() {
 
   
 
-## als.get(): StorageType | undefined 
+## als.getStore(): StorageType | undefined 
 
 ***Return***
 
@@ -105,7 +260,7 @@ function requestHandler() {
 
 ***Return***
 
-- Return the return value of `fn`
+-  `fn`'s return value
 
   
 
@@ -119,5 +274,7 @@ function requestHandler() {
 
 ***Return***
 
-- Return the return value of `fn`
+- `fn`'s return value
+
+
 

@@ -1,6 +1,9 @@
-const ALS = require('../dist/als/als').default;
+// const ALS = require('../dist/als/als');
+const ALS = require('../dist/index');
+console.log(ALS);
 const store = new ALS();
 const END = 300000;
+
 const { writeResult } = require('./util/writeFile');
 const result = [];
 function sleep(ms) {
