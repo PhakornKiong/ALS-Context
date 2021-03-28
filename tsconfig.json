@@ -6,7 +6,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": false,
-    // "types": ["node", "jest"],
+    "types": ["node", "jest"],
     "strict": false,
     "moduleResolution": "node",
     "noUnusedLocals": false,
@@ -26,15 +26,12 @@
       "node_modules/@types/node/async_hooks.d.ts",
       "@types"
     ]
-    // "paths": {
-    //   "async_hooks":  ["./@types/process.d.ts"]
-    // }
   },
   "exclude": [
     "node_modules",
     "tests",
     "dist",
-    "src/cls/cls-hooked.js",
-    "benchmark"
+    "benchmark",
+    "examples"
   ]
 }

@@ -19,11 +19,13 @@ describe('ALS able to handle multiple instances correctly', () => {
             process.nextTick(() => {
               store1.set('name', 'bob');
               store2.set('name', 'alice');
-              test3Val = store1.get('name');
-              test4Val = store2.get('name');
-              expect(test3Val).toEqual('bob');
-              expect(test4Val).toEqual('alice');
-              done();
+              setTimeout(() => {
+                test3Val = store1.get('name');
+                test4Val = store2.get('name');
+                expect(test3Val).toEqual('bob');
+                expect(test4Val).toEqual('alice');
+                done();
+              });
             });
           });
         });

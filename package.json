@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "rimraf dist/",
     "build": "npm run clean && tsc",
+    "watch": "tsc --watch",
     "test": "npm run build && jest --config=jest.config.js",
     "devtest": "jest --config=jest.config.js",
     "cover": "npm run build && jest --config=jest.config.js --coverage",
