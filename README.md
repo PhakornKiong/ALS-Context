@@ -1,4 +1,8 @@
 # ALSContext
+[![tests](https://github.com/Darkripper214/ALS-Context/actions/workflows/tests.yml/badge.svg)](https://github.com/Darkripper214/ALS-Context/actions/workflows/tests.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Darkripper214/ALS-Context/badge.svg?branch=master)](https://coveralls.io/github/Darkripper214/ALS-Context?branch=master)
+[![npm version](https://badge.fury.io/js/alscontext.svg)](https://badge.fury.io/js/alscontext)
+
 Continuation-local storage using Node.js AsyncLocalStorage with fallback to a modified implementation of cls-hooked.
 
 When running Nodejs version 8.12.0 to version before (`12.17.0` or `13.10.0`), this module uses [Async-Hook](https://nodejs.org/docs/latest-v8.x/api/async_hooks.html) API from node.js inspired from [cls-hooked](https://github.com/Jeff-Lewis/cls-hooked). 
@@ -262,7 +266,23 @@ store1.run({}, () => {
 
 -  `fn`'s return value
 
-  
+  ```javascript
+const ALS = require('alscontext').default;
+const store = ALS();
+
+let bindedFunc;
+const someFunc = () => {
+  return store.get('test');
+};
+store.run({ test: 'something' }, () => {
+  bindedFunc = store.bind(someFunc);
+});
+
+bindedFunc(); // return "something" - able to get the context outside of run
+someFunc(); // return undefined
+  ```
+
+
 
 ## als.bindEmitter( asyncResource: AsyncResource, fn:(...args: any[]) => any, ...args:any[]  ): any
 
@@ -275,6 +295,30 @@ store1.run({}, () => {
 ***Return***
 
 - `fn`'s return value
+
+```javascript
+const ALS = require('alscontext').default;
+const { AsyncResource } = require('async_hooks');
+const store = ALS();
+
+let asyncResource1;
+let asyncResource2;
+const otherFunc = () => {
+  return store.get('test');
+};
+store.run({ test: 1 }, () => {
+  asyncResource1 = new AsyncResource('a');
+  store.run({ test: 2 }, () => {
+    asyncResource2 = new AsyncResource('b');
+  });
+});
+const bindedFunc1 = store.bindEmitter(asyncResource1, otherFunc);
+const bindedFunc2 = store.bindEmitter(asyncResource2, otherFunc);
+bindedFunc1(); // return 1 - the context for the outer run
+bindedFunc2(); // return 2 - the context for the inner run
+otherFunc(); // return undefined
+
+```
 
 
 

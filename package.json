@@ -21,6 +21,9 @@
     "prepublishOnly": "npm run build",
     "bench": "node benchmark/cls-hooked.run.js && node benchmark/cls.run.js && node benchmark/als.run.js"
   },
+  "engines": {
+    "node": ">=8.12.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Darkripper214/ALS-Context.git"
