@@ -53,9 +53,9 @@ jobs:
           CI: true
           
       - name: Update Coveralls
-        if: ${{ matrix.node-version != 8.12 }}
+        if: ${{ matrix.node-version != 8.12 && & success() }} 
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: Unit Test
-        if: success()
+
