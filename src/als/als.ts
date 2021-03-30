@@ -21,7 +21,7 @@ export class ALS<T> implements Context<T> {
    * @returns T | undefined Return the stored value in context or undefined
    */
   get(key: string): T | undefined {
-    const store = this.storage.getStore();
+    const store = this.getStore();
     return store?.get(key);
   }
 
@@ -32,7 +32,7 @@ export class ALS<T> implements Context<T> {
    * @returns void
    */
   set(key: string, value: T): void {
-    const store = this.storage.getStore();
+    const store = this.getStore();
     store?.set(key, value);
   }
 
@@ -56,10 +56,8 @@ export class ALS<T> implements Context<T> {
     let store: Map<any, any>;
     if (defaults instanceof Map) {
       store = defaults;
-    } else if (defaults) {
-      store = new Map(Object.entries(defaults));
     } else {
-      store = new Map();
+      store = new Map(Object.entries(defaults));
     }
     return this.storage.run(store, callback, args);
   }
@@ -109,7 +107,6 @@ export class ALS<T> implements Context<T> {
         writable: true,
       },
     });
-    console.log(ret);
     return ret;
   }
 }

@@ -17,7 +17,18 @@ describe('AsyncLocalStorage tests', () => {
       });
     });
 
-    describe('Set is called inside of run() - 1 (With default)', () => {
+    describe('Set is called inside of run() - 1 (Without default)', () => {
+      test('Return the item set during run & undefined for others', (done) => {
+        als.run({}, () => {
+          als.set('key', 'something');
+          expect(als.get('key')).toBe('something');
+          expect(als.get('something')).toBeUndefined();
+          done();
+        });
+      });
+    });
+
+    describe('Set is called inside of run() - 2 (With default as Object)', () => {
       test('Return the default Object provided during run()', (done) => {
         als.run({ key: 'something' }, () => {
           expect(als.get('key')).toBe('something');
@@ -26,12 +37,11 @@ describe('AsyncLocalStorage tests', () => {
       });
     });
 
-    describe('Set is called inside of run() - 2 (Without default)', () => {
-      test('Return the item set during run & undefined for others', (done) => {
-        als.run({}, () => {
-          als.set('key', 'something');
+    describe('Set is called inside of run() - 3 (With default as Map)', () => {
+      test('Return the default Object provided during run()', (done) => {
+        const map = new Map().set('key', 'something');
+        als.run(map, () => {
           expect(als.get('key')).toBe('something');
-          expect(als.get('something')).toBeUndefined();
           done();
         });
       });

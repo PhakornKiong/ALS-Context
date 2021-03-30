@@ -99,10 +99,8 @@ export class CLS<T> implements Context<T> {
 
     if (defaults instanceof Map) {
       store = defaults;
-    } else if (defaults) {
-      store = new Map(Object.entries(defaults));
     } else {
-      store = new Map();
+      store = new Map(Object.entries(defaults));
     }
 
     const resource = new AsyncResource('LocalStorage', { requireManualDestroy: true }) as any;

@@ -14,7 +14,18 @@ describe('AsyncLocalStorage tests', () => {
     });
   });
 
-  describe('Set is called inside of run() - 1 (With default)', () => {
+  describe('Set is called inside of run() - 1 (Without default)', () => {
+    test('Return the item set during run & undefined for others', (done) => {
+      cls.run({}, () => {
+        cls.set('key', 'something');
+        expect(cls.get('key')).toBe('something');
+        expect(cls.get('something')).toBeUndefined();
+        done();
+      });
+    });
+  });
+
+  describe('Set is called inside of run() - 2 (With default as Object)', () => {
     test('Return the default Object provided during run()', (done) => {
       cls.run({ key: 'something' }, () => {
         expect(cls.get('key')).toBe('something');
@@ -23,12 +34,33 @@ describe('AsyncLocalStorage tests', () => {
     });
   });
 
-  describe('Set is called inside of run() - 2 (Without default)', () => {
-    test('Return the item set during run & undefined for others', (done) => {
-      cls.run({}, () => {
-        cls.set('key', 'something');
+  describe('Set is called inside of run() - 3 (With default as Map)', () => {
+    test('Return the default Object provided during run()', (done) => {
+      const map = new Map().set('key', 'something');
+      cls.run(map, () => {
         expect(cls.get('key')).toBe('something');
-        expect(cls.get('something')).toBeUndefined();
+        done();
+      });
+    });
+  });
+
+  describe('Set is called inside of run() - 4 (With invalid default stuff)', () => {
+    test('Return the default Object provided during run()', (done) => {
+      cls.run('something', () => {
+        expect(cls.get('key')).toBeUndefined();
+        done();
+      });
+    });
+  });
+
+  describe('Set is called inside of run() - 5 (With current context)', () => {
+    test('Return the default Object provided during run()', (done) => {
+      cls.run({ key: 'something' }, () => {
+        const curStore = cls.getStore();
+        cls.run(curStore, () => {
+          expect(cls.get('key')).toBe('something');
+          done();
+        });
         done();
       });
     });
