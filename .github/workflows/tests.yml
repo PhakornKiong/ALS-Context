@@ -41,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Run Tests
-        if: ${{ matrix.node-version === 8.12 }}
+        if: ${{ matrix.node-version == 8.12 }}
         run: npm run test:clscover
         env:
           CI: true
