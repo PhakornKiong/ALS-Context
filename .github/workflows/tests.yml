@@ -53,6 +53,7 @@ jobs:
           CI: true
           
       - name: Update Coveralls
+        if: ${{ matrix.node-version != 8.12 }}
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
