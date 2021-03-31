@@ -1,7 +1,7 @@
 const ALS = require('../../dist/als/als').default;
 const store = new ALS();
 
-describe('CLS enable and disable tests', () => {
+describe('ALS enable and disable tests', () => {
   test('Disable should work as intended', () => {
     store.run({}, () => {
       store.set('foo', 'bar');
