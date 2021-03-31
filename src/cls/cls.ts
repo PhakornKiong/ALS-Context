@@ -18,6 +18,7 @@ export class CLS<T> implements Context<T> {
   enabled: boolean;
   kResourceStore: number;
   active: any;
+  _hook: async_hooks.AsyncHook;
   _contexts: Map<any, any>;
 
   constructor() {
@@ -47,39 +48,33 @@ export class CLS<T> implements Context<T> {
     this._enable();
   }
 
+  disable(): void {
+    if (this.enabled) {
+      this.enabled = false;
+      //disable hook
+      this._hook.disable();
+    }
+  }
+
+  exit<R>(callback: (...args: any[]) => R, ...args: any[]): R {
+    if (!this.enabled) {
+      return Reflect.apply(callback, null, args);
+    }
+    this.disable();
+    try {
+      return Reflect.apply(callback, null, args);
+    } finally {
+      this._enable();
+    }
+  }
+
   _enable(): void {
     if (!this.enabled) {
       this.enabled = true;
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const self = this;
-      const storageHook = async_hooks.createHook({
-        // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars
-        init(asyncId: number, type: string, triggerAsyncId: number, resource: object) {
-          if (self.active) {
-            self._contexts.set(asyncId, self.active[self.kResourceStore]);
-          } else {
-            self._contexts.set(asyncId, self._contexts.get(triggerAsyncId));
-          }
-        },
-        // before(asyncId) {
-        // },
-        // after(asyncId) {
-        //   // debug2('after', asyncId);
-        //   // To be review, do we need contexts till it is destroyed?
-        //   // This doesn't really help
-        //   // self._contexts.delete(asyncId);
-        // },
-        destroy(asyncId: number) {
-          self._contexts.delete(asyncId);
-          // Do i need to clear self.active? if not set to null when exiting asyncResource.runInAsyncScope
-          // if (self.active && self.active.asyncId() === asyncId) {
-          //   debug2('delete');
-          //   self.active = null;
-          // }
-          // debug2('destroy', asyncId);
-        },
-      });
-      storageHook.enable();
+      this._hook = storageHook(self);
+      this._hook.enable();
     }
   }
 
@@ -188,6 +183,22 @@ export class CLS<T> implements Context<T> {
     return ret;
   }
 }
+
+const storageHook = (self: CLS<any>) => {
+  return async_hooks.createHook({
+    // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars
+    init(asyncId: number, type: string, triggerAsyncId: number, resource: object) {
+      if (self.active) {
+        self._contexts.set(asyncId, self.active[self.kResourceStore]);
+      } else {
+        self._contexts.set(asyncId, self._contexts.get(triggerAsyncId));
+      }
+    },
+    destroy(asyncId: number) {
+      self._contexts.delete(asyncId);
+    },
+  });
+};
 
 export default CLS;
 // const fs = require('fs');

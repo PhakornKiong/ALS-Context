@@ -43,6 +43,17 @@ export class ALS<T> implements Context<T> {
   getStore(): StorageType | undefined {
     return this.storage.getStore();
   }
+  /**
+   * Disables the instqance of ALS
+   * @returns void
+   */
+  disable(): void {
+    this.storage.disable();
+  }
+
+  exit<R>(callback: (...args: any[]) => R, ...args: any[]): R {
+    return this.storage.exit(callback, ...args);
+  }
 
   // Provide empty Map by default
   /**
