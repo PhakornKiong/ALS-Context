@@ -213,6 +213,8 @@ store1.run({}, () => {
 
 ## als.run<R>(defaults: Record<string, any>, callback: (...args: any[]) => R, ...args: any[]): R
 
+Runs a function synchronously and start the boundary of a context, anything set to be run from within the callback will have the same context.
+
 ***Parameters***
 
 - ***defaults***: Optional `Map` or `Record` containing default values for the context
@@ -227,6 +229,8 @@ store1.run({}, () => {
 
 ## als.get(key: string): T | undefined 
 
+Get the stored value in context or undefined
+
 ***Parameters***
 
 - ***key***: a string key to retrieve the stored value in context
@@ -239,6 +243,8 @@ store1.run({}, () => {
 
 ## als.set(key: string, value: T): void
 
+Set key & value to the current context
+
 ***Parameters***
 
 - ***key***: a string key to store value in context
@@ -249,13 +255,25 @@ store1.run({}, () => {
 
 ## als.getStore(): StorageType | undefined 
 
+Get the entire context in Map object or undefined
+
 ***Return***
 
 - Return the entire context in `Map` object or undefined (if it is called outside `als.run`)
 
-  
 
-## als.bind( fn:(...args: any[]) => any, ...args:any[] ): any
+
+## als.disable(): void
+
+Disable the instance of `als`. All subsequent calls to `als.getStore()` & `als.get()` will return undefined until new context is created using `als.run()`. It is developer’s responsibility to ensure that `als` is disabled so the instance of `als` can be garbage-collected. This does not applies to the `store` or `asyncResource` (Which is used to achieve this functionality) as these objects are garbage collected when the async resources is completed (`after` hook)
+
+Use this method when `als` is no longer in use.
+
+
+
+## als.exit( fn:(...args: any[]) => any, ...args:any[] ): any
+
+Runs a function synchronously outside of a context and returns its return value. The store is not accessible within the function or the asynchronous operations created within the function. Any `als.getStore()` or `als.get()` call done within the function will always return `undefined`.
 
 ***Parameters***
 
@@ -264,9 +282,24 @@ store1.run({}, () => {
 
 ***Return***
 
--  `fn`'s return value
+- `fn`'s return value
 
-  ```javascript
+
+
+## als.bind( fn:(...args: any[]) => any, ...args:any[] ): any
+
+Bind a function to the current execution context. This is useful especially when you need to access the context outside of `als.run()` or when dealing when `EventEmitters` 
+
+***Parameters***
+
+- ***fn***: Function to be bind to the current execution context
+- ***...args***: Option arguments to be passed to `fn`
+
+***Return***
+
+- `fn`'s return value
+
+```javascript
 const ALS = require('alscontext').default;
 const store = ALS();
 
@@ -280,11 +313,13 @@ store.run({ test: 'something' }, () => {
 
 bindedFunc(); // return "something" - able to get the context outside of run
 someFunc(); // return undefined
-  ```
+```
 
 
 
 ## als.bindEmitter( asyncResource: AsyncResource, fn:(...args: any[]) => any, ...args:any[]  ): any
+
+An extension to the `als.bind` which allow developers to specify the execution context to be bind to the function. This is useful especially when you need to access the context outside of `als.run()` or when dealing when `EventEmitters` 
 
 ***Parameters***
 
@@ -319,6 +354,3 @@ bindedFunc2(); // return 2 - the context for the inner run
 otherFunc(); // return undefined
 
 ```
-
-
-
