@@ -1,8 +1,8 @@
 const ALS = require('../../dist/als/als').default;
-const store = new ALS();
 
 describe('ALS enable and disable tests', () => {
-  test('Disable should work as intended', () => {
+  test('Nesting of disable and exit should work as intended', () => {
+    const store = new ALS();
     store.run({}, () => {
       store.set('foo', 'bar');
       process.nextTick(() => {
@@ -28,5 +28,36 @@ describe('ALS enable and disable tests', () => {
         });
       });
     });
+  });
+
+  test('Exit should work as intended', () => {
+    const store = new ALS();
+    store.run({}, () => {
+      store.set('foo', 'bar');
+      store.exit(() => {
+        expect(store.getStore()).toBeUndefined();
+      });
+      expect(store.get('foo')).toEqual('bar');
+    });
+  });
+
+  test('Exit should able to run when not inside run', () => {
+    const store = new ALS();
+    const spyFn = jest.fn();
+    store.exit(() => {
+      spyFn();
+      expect(store.getStore()).toBeUndefined();
+    });
+    expect(spyFn).toBeCalledTimes(1);
+  });
+
+  test('Disable should work as intended', () => {
+    const store = new ALS();
+    store.run({}, () => {
+      store.set('foo', 'bar');
+      store.disable();
+      expect(store.getStore()).toBeUndefined();
+    });
+    store.disable(); // Wont trigger any error
   });
 });
