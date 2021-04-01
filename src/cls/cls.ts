@@ -48,6 +48,10 @@ export class CLS<T> implements Context<T> {
     this._enable();
   }
 
+  /**
+   * Disable the instance of ALS.
+   * @returns void
+   */
   disable(): void {
     if (this.enabled) {
       this.enabled = false;
@@ -56,6 +60,12 @@ export class CLS<T> implements Context<T> {
     }
   }
 
+  /**
+   * Runs a function synchronously outside of a context and returns its return value
+   * @param  {(...args:any[])=>R} callback Function that will be the boundary of the said context, anything set to be run from within the callback will have the same context
+   * @param  {any[]} ...args Option arguments to be passed to be passed to callback
+   * @returns R callback's return value
+   */
   exit<R>(callback: (...args: any[]) => R, ...args: any[]): R {
     if (!this.enabled) {
       return Reflect.apply(callback, null, args);

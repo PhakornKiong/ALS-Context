@@ -43,14 +43,21 @@ export class ALS<T> implements Context<T> {
   getStore(): StorageType | undefined {
     return this.storage.getStore();
   }
+
   /**
    * Disables the instqance of ALS
    * @returns void
    */
-  disable(): void {
+  disale(): void {
     this.storage.disable();
   }
 
+  /**
+   * Runs a function synchronously outside of a context and returns its return value
+   * @param  {(...args:any[])=>R} callback Function that will be the boundary of the said context, anything set to be run from within the callback will have the same context
+   * @param  {any[]} ...args Option arguments to be passed to be passed to callback
+   * @returns R callback's return value
+   */
   exit<R>(callback: (...args: any[]) => R, ...args: any[]): R {
     return this.storage.exit(callback, ...args);
   }
