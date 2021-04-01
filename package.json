@@ -1,6 +1,6 @@
 {
   "name": "alscontext",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Continuation-local storage using Node.js AsyncLocalStorage with fallback to modified cls-hooked",
   "maintainers": [
     {

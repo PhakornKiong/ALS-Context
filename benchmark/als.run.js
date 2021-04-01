@@ -1,5 +1,4 @@
-// const ALS = require('../dist/als/als');
-const ALS = require('../dist/index');
+const ALS = require('../dist/als/als').default;
 console.log(ALS);
 const store = new ALS();
 const END = 300000;
