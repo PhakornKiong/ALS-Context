@@ -48,7 +48,7 @@ export class ALS<T> implements Context<T> {
    * Disables the instqance of ALS
    * @returns void
    */
-  disale(): void {
+  disable(): void {
     this.storage.disable();
   }
 
